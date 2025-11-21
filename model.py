@@ -53,12 +53,12 @@ class HMM:
             beta[len(sequence)-1][index] = 1
 
         # recursive step
-        for t in range(len(sequence)-2, 1):
+        for t in range(len(sequence)-2, -1, -1): # to go backwards
             for i in range(self.hidden_states):
 
                 temp = 0
                 for state in range(self.hidden_states):
-                    temp += self.A[i][state] * self.B(sequence[t+1], self.mu[state], self.var[state]) * beta[t+1][state]
+                    temp += self.A[i][state] * self.B(sequence[t+1]) * beta[t+1][state]
 
                 beta[t][i] = temp
 
@@ -75,7 +75,7 @@ class HMM:
         return (alpha[time][state] * beta[time][state]) / evidence
 
     def transition_probability(self, state_i, state_j, alpha, beta, evidence, time, sequence):
-        return (alpha[time][state_i] * self.A[state_i][state_j] * self.B(sequence[time+1], self.mu[state_j], self.var[state_j]) * beta[time+1][state_j]) / evidence
+        return (alpha[time][state_i] * self.A[state_i][state_j] * self.B(sequence[time+1]) * beta[time+1][state_j]) / evidence
 
     def init_params(self, sequence):
         
@@ -122,27 +122,45 @@ class HMM:
 
             self.var[i] = var_num/den
 
-    def train(self):
+    def train(self, sequences, max_iterations=100): #stopes after max_iterations or when evidence stops improving significantly
+
+        prev_evidence = 0  # Initialize here
+        
+        for iteration in range(max_iterations):
+            total_evidence = 0 
+            
+            for sequence in sequences:
+                # E-step: Forward-Backward
+                alpha = self.forward(sequence)
+                beta = self.backward(sequence)
+                evidence = np.sum(alpha[-1])  # Use this instead of calc_evidence
+                total_evidence += evidence
+                
+                # M-step: Update parameters
+                self.update_parameters(alpha, beta, evidence, sequence)
+            
+            print(f"Iteration {iteration}, Total Evidence: {total_evidence}")
+            
+            # Check if evidence stopped improving significantly
+            if iteration > 0 and abs(total_evidence - prev_evidence) < 0.001:
+                print("Converged!")
+                break
+            
+            prev_evidence = total_evidence  # Update for next iteration
+    def classify(self):
         pass
 
-    def classify(self, sequence):
+    def B(self, observation):  
         
-        alpha = self.forward(sequence)
-        return self.calc_evidence(alpha)
-
-    def B(self, observation):
-
-        v = np.array([observation-self.mu])
-
-        denominator = math.pow(2*math.pi,3/2) * np.linalg.det(self.var)
-
-        power = -0.5*v.dot(np.linalg.inv(self.var))
+        v = np.array([observation - self.mu])
+        denominator = math.pow(2*math.pi, 3/2) * np.linalg.det(self.var)
+        
+        power = -0.5 * v.dot(np.linalg.inv(self.var))
         power = power.dot(np.transpose(v))
-
         power = power[0][0]
 
-        return math.exp(power)/denominator
+        return math.exp(power) / denominator
 
 
-    
+        
 
