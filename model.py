@@ -6,8 +6,8 @@ class HMM:
         self.hidden_states = hidden_states
         self.PI = np.random.rand(self.hidden_states)
         self.A = np.random.rand(self.hidden_states, self.hidden_states)
-        self.mu = np.random.rand(self.hidden_states, 3)
-        self.var = np.random.rand(self.hidden_states, 3, 3)
+        self.mu = np.random.rand(3)
+        self.var = np.random.rand(3, 3)
         self.label = label
 
     def get_hidden_states(self):
@@ -69,7 +69,7 @@ class HMM:
         return beta
 
     def calc_evidence(self, alpha):
-        return sum(alpha[alpha.length-1])
+        return sum(alpha[alpha.shape[0]-1])
 
     def posterior(self, state, time, alpha, beta, evidence):
         return (alpha[time][state] * beta[time][state]) / evidence
@@ -77,8 +77,10 @@ class HMM:
     def transition_probability(self, state_i, state_j, alpha, beta, evidence, time, sequence):
         return (alpha[time][state_i] * self.A[state_i][state_j] * self.B(sequence[time+1]) * beta[time+1][state_j]) / evidence
 
-    def init_params(self):
-        pass
+    def init_params(self, sequence):
+        
+        self.mu = np.mean(sequence, axis=0)
+        self.var = np.cov(sequence, rowvar=False)
 
     def update_parameters(self, alpha, beta, evidence, sequence):
 
@@ -148,15 +150,12 @@ class HMM:
     def classify(self):
         pass
 
-    def B(self, observation, state_index=0):  # Add state_index parameter
-        # Use specific state's parameters
-        state_mu = self.mu[state_index]
-        state_var = self.var[state_index]
+    def B(self, observation):  
         
-        v = np.array([observation - state_mu])
-        denominator = math.pow(2*math.pi, 3/2) * np.linalg.det(state_var)
+        v = np.array([observation - self.mu])
+        denominator = math.pow(2*math.pi, 3/2) * np.linalg.det(self.var)
         
-        power = -0.5 * v.dot(np.linalg.inv(state_var))
+        power = -0.5 * v.dot(np.linalg.inv(self.var))
         power = power.dot(np.transpose(v))
         power = power[0][0]
 
