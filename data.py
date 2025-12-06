@@ -90,6 +90,7 @@ def augment(src, clean, counter):
                 r = 1
 
             for i in range(r):
+                scaling_factor = random.uniform(0.9, 1.1)#method 3 
 
                 with open(os.path.join(dest,type,str(file_counter))+'.txt', "w") as destination:
                     file_counter += 1
@@ -101,12 +102,14 @@ def augment(src, clean, counter):
                             i = i.replace(")", "")
                             i = i.split(',')
 
+
+                        
                             point = [
-                                int(i[0]) + np.random.normal(0, 1),
-                                int(i[1]) + np.random.normal(0, 1),
-                                int(i[2]) + np.random.normal(0, 1)
+                                (int(i[0]) + np.random.normal(0, 1)) * scaling_factor,
+                                (int(i[1]) + np.random.normal(0, 1)) * scaling_factor, 
+                                (int(i[2]) + np.random.normal(0, 1)) * scaling_factor
                             ]
-                            
+                                                        
                             destination.write('('+str(point[0])+','+str(point[1])+','+str(point[2])+')\n')
                 
                             
