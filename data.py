@@ -85,11 +85,13 @@ def augment(src, clean, counter):
             text = f.read()
 
             if clean:
-                r = 2
+                r = 4
             else:
-                r = 1
+                r = 2
 
             for i in range(r):
+
+                scaling_factor = random.uniform(0.9,1.1)
 
                 with open(os.path.join(dest,type,str(file_counter))+'.txt', "w") as destination:
                     file_counter += 1
@@ -112,7 +114,7 @@ def augment(src, clean, counter):
                             
         file_counter = counter
 
-def create_sets(train_folders, validation_folders, ratio=0.8, seed=10):
+def create_sets(train_folders, validation_folders, ratio=0.8, seed=12):
 
     random.seed(seed)
 

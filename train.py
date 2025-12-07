@@ -52,15 +52,15 @@ def train(model, set):
     model.train(set) 
 
 # Initialize models + number of hidden states
-hidden_states = 4
+hidden_states = 3
 source_training = 'training_set'
 
 model_set = [
-    model.HMM(hidden_states, 'circle', False),
-    model.HMM(hidden_states, 'diagonal_left', False),
-    model.HMM(hidden_states, 'diagonal_right', False),
-    model.HMM(hidden_states, 'horizontal', False),
-    model.HMM(hidden_states, 'vertical', False)
+    model.HMM(hidden_states, 'circle', True),
+    model.HMM(hidden_states, 'diagonal_left', True),
+    model.HMM(hidden_states, 'diagonal_right', True),
+    model.HMM(hidden_states, 'horizontal', True),
+    model.HMM(hidden_states, 'vertical', True)
 ]
 
 training_sets = [
