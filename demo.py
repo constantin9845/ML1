@@ -1,4 +1,11 @@
 # pip install -r requirements.txt
+
+# Demo steps
+# 1. pip install -r requirements.txt
+# 2. Rename given test set to data and place in project folder
+# 3. Run demo.py 
+# 4. Run test.py
+
 import os
 import numpy as np
 import random
