@@ -1,19 +1,17 @@
-# pip install -r requirements.txt
+# guide
+# # pip install -r requirements.txt
 
 # Demo steps
 # 1. pip install -r requirements.txt
-# 2. Rename given test set to data and place in project folder
+# 2. Rename given test set to 'dataset and place in project folder
 # 3. Run demo.py 
-# 4. Run test.py
 
-import os
-import numpy as np
-import random
 import shutil
+import os
+import model
+import numpy as np
 
-
-def clean(source):
-
+def clean_demo_set(source):
     source = source
     dest = f'validation_set'
 
@@ -21,7 +19,7 @@ def clean(source):
         shutil.rmtree(f'validation_set')
 
     try:
-        source_list = os.listdir(source)
+        samples = os.listdir(source)
     except:
         print('Could not find data set')
         exit(1)
@@ -32,34 +30,88 @@ def clean(source):
         pass
 
     # Clean Data points -> store in clean_data folder
-    for type in source_list:
+    for sample in samples:
 
-        t = os.path.join(source,type)
-        samples = os.listdir(t)
+        f = open(os.path.join(source,sample))
+        text = f.read()
 
-        try:
-            os.mkdir(os.path.join(dest,type))
-        except:
-            pass
+        target = os.path.join(dest,sample)
 
+        with open(target, "w") as destination:
 
-        for sample in samples:
+            for line in text.split('#'):
+                if(len(line) > 10):
+                    temp = line.split(',')[6].replace('/',',')
+                    destination.write('('+temp+')'+'\n')
 
-            f = open(os.path.join(source,type,sample))
-            text = f.read()
+def prepare_demo_set(source):
 
-            target = os.path.join(dest,type,sample)
+    samples = os.listdir(source)
 
-            with open(target, "w") as destination:
+    test_sequences = []
+    file_names = []
 
-                for line in text.split('#'):
-                    if(len(line) > 10):
-                        temp = line.split(',')[6].replace('/',',')
-                        destination.write('('+temp+')'+'\n')
+    for sample in samples:
 
+        sequence = []
+    
+        f = open(os.path.join(source,sample))
+        text = f.read()
 
-input = 'data'
+        text = text.split('\n')
 
-clean(input)
+        for point in text:
+            if len(point) < 2:
+                continue
 
+            point = point.replace('(',"")
+            point = point.replace(')',"")
 
+            point = point.split(',')
+            point[0] = float(point[0])
+            point[1] = float(point[1])
+            point[2] = float(point[2])
+
+            sequence.append(point)
+
+        test_sequences.append(sequence)
+        file_names.append(sample)
+        
+    return [test_sequences, file_names]
+
+def demo_test(models, sequence):
+    best = -np.inf
+    label = ''
+
+    for model in models:
+        score = model.classify(sequence)
+        if score > best:
+            best = score
+            label = model.get_label()
+
+    return label
+
+hidden_states = 3
+source_test = 'dataset'
+
+model_set = [
+    model.HMM.load(f"model_parameters{hidden_states}/circle.pkl"),
+    model.HMM.load(f"model_parameters{hidden_states}/diagonal_left.pkl"),
+    model.HMM.load(f"model_parameters{hidden_states}/diagonal_right.pkl"),
+    model.HMM.load(f"model_parameters{hidden_states}/horizontal.pkl"),
+    model.HMM.load(f"model_parameters{hidden_states}/vertical.pkl")
+]
+
+clean_demo_set('dataset')
+t = prepare_demo_set('validation_set')
+
+test_set = t[0]
+file_names = t[1]
+
+index = 0
+for sequence in test_set:
+
+    prediction = demo_test(model_set, sequence)
+
+    print(f"{file_names[index]}: {prediction}")
+    index += 1
