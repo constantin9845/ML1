@@ -1,6 +1,3 @@
-# guide
-# # pip install -r requirements.txt
-
 # Demo steps
 # 1. pip install -r requirements.txt
 # 2. Rename given test set to 'dataset and place in project folder
