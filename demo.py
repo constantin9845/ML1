@@ -108,10 +108,24 @@ t = prepare_demo_set('validation_set')
 test_set = t[0]
 file_names = t[1]
 
+result = []
+
+result.sort()
+
 index = 0
 for sequence in test_set:
 
     prediction = demo_test(model_set, sequence)
 
     print(f"{file_names[index]}: {prediction}")
+
+    num = file_names[index][0:2]
+    num = num.replace(".","")
+
+    result.append([int(num),file_names[index], prediction])
     index += 1
+
+res = sorted(result, key=lambda x: x[0])
+print(10*"*")
+for entry in res:
+    print(entry[1],": ", entry[2])
